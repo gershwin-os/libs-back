@@ -759,27 +759,51 @@ WaylandServer (Cursor)
 - (void)setcursor:(void *)cid
 {
   struct cursor *wayland_cursor = cid;
+
+  NSLog(@"[DEBUG] setcursor: called with wayland_cursor=%p", wayland_cursor);
+
   if (wayland_cursor == NULL)
-    {
+  {
+      NSLog(@"[ERROR] wayland_cursor is NULL!");
       return;
-    }
+  }
   if (wayland_cursor->cursor == NULL)
-    {
+  {
+      NSLog(@"[ERROR] wayland_cursor->cursor is NULL!");
       return;
-    }
+  }
   if (wayland_cursor->image == NULL)
-    {
+  {
+      NSLog(@"[ERROR] wayland_cursor->image is NULL!");
       return;
-    }
+  }
   if (wayland_cursor->buffer == NULL)
-    {
+  {
+      NSLog(@"[ERROR] wayland_cursor->buffer is NULL!");
       return;
-    }
+  }
+
+  NSLog(@"[DEBUG] Cursor surface before destroy: %p", wayland_cursor->surface);
 
   if (wayland_cursor->surface)
-    {
-      wl_surface_destroy(wayland_cursor->surface);
-    }
+  {
+      NSLog(@"[DEBUG] Skipping surface destruction for testing...");
+      // wl_surface_destroy(wayland_cursor->surface);  // TEMPORARILY COMMENT THIS
+      wayland_cursor->surface = NULL; // Still set to NULL to avoid reuse
+  }
+  else
+  {
+      NSLog(@"[WARNING] Cursor surface was already NULL before destroy");
+  }
+
+  // Additional debug check
+  if (!wlconfig->cursor_surface)
+  {
+      NSLog(@"[ERROR] wlconfig->cursor_surface is NULL before setting cursor!");
+      return;
+  }
+
+  NSLog(@"[DEBUG] Setting new cursor surface...");
   wl_pointer_set_cursor(wlconfig->pointer.wlpointer, wlconfig->event_serial,
             wlconfig->cursor_surface,
             wayland_cursor->image->hotspot_x,
@@ -790,8 +814,8 @@ WaylandServer (Cursor)
                   wayland_cursor->image->width, wayland_cursor->image->height);
   wl_surface_commit(wlconfig->cursor_surface);
 
-
   wlconfig->cursor = wayland_cursor;
+  NSLog(@"[DEBUG] Cursor successfully set!");
 }
 
 - (void)freecursor:(void *)cid
